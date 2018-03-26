@@ -17,29 +17,8 @@ from models import Fiber, Link, Node, object_class, object_factory, Traffic, Obj
 swap = Blueprint('swap_app', __name__)
 
 
-def allowed_file(name, allowed_extensions):
-    allowed_syntax = '.' in name
-    allowed_extension = name.rsplit('.', 1)[1].lower() in allowed_extensions
-    return allowed_syntax and allowed_extension
-
-
 @swap.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST':
-        for model in (Fiber, Traffic, Link, Node, Object):
-            model.query.delete()
-            db.session.commit()
-        file = request.files['file']
-        if allowed_file(secure_filename(file.filename), {'xls', 'xlsx'}):
-            book = open_workbook(file_contents=file.read())
-            for obj_type, cls in object_class.items():
-                sheet = book.sheet_by_name(obj_type)
-                properties = sheet.row_values(0)
-                for row_index in range(1, sheet.nrows):
-                    kwargs = dict(zip(properties, sheet.row_values(row_index)))
-                    kwargs['type'] = obj_type
-                    object_factory(db, **kwargs)
-                db.session.commit()
     objects = {
         obj_type: {
             obj: OrderedDict([
